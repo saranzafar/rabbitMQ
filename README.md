@@ -14,9 +14,9 @@ A comprehensive, hands-on guide to understanding and implementing all four Rabbi
 
 ## Quick Navigation
 
-| [Direct Exchange](direct-exchange/README.md) | [Topic Exchange](topics-exchange/README.md) | [Fanout Exchange](fanout-exchange/README.md) | [Headers Exchange](header-exchange/README.md) | [Priority Queue](priority-queue/README.md) |
-|:---:|:---:|:---:|:---:|:---:|
-| Exact Match | Wildcard Patterns | Broadcast | Header Attributes | Priority-Based Delivery |
+| [Direct Exchange](direct-exchange/README.md) | [Topic Exchange](topics-exchange/README.md) | [Fanout Exchange](fanout-exchange/README.md) | [Headers Exchange](header-exchange/README.md) | [Priority Queue](priority-queue/README.md) | [Delayed Queue](delayed-queue/README.md) |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| Exact Match | Wildcard Patterns | Broadcast | Header Attributes | Priority-Based Delivery | Delayed Message Scheduling |
 
 ## Table of Contents
 
@@ -80,7 +80,7 @@ Exchanges are **message routing agents** that receive messages from producers an
 
 ## Exchange Types Covered
 
-This repository demonstrates all four standard RabbitMQ exchange types and the Priority Queue feature:
+This repository demonstrates all four standard RabbitMQ exchange types and advanced queue features:
 
 | Exchange Type | Routing Strategy | Best Use Case |
 |--------------|------------------|---------------|
@@ -89,6 +89,7 @@ This repository demonstrates all four standard RabbitMQ exchange types and the P
 | **Fanout** | Broadcast to all queues | Pub/Sub broadcasting |
 | **Headers** | Multiple attribute matching | Complex attribute-based routing |
 | **Priority Queue** | Message priority levels | Urgent vs routine message processing |
+| **Delayed Queue** | Time-based message scheduling | Scheduled/delayed message delivery |
 
 ---
 
@@ -169,10 +170,16 @@ rabbitmq/
 │   ├── newVideoNotifications.js  # Video notification consumer
 │   ├── liveStreamNotifications.js # Live stream consumer
 │   └── commentsLikeNotifications.js # Comment/like consumer
-└── priority-queue/               # Priority Queue Demo
+├── priority-queue/               # Priority Queue Demo
+│   ├── README.md                 # Detailed documentation
+│   ├── producer.js               # Sends messages with priority levels
+│   └── consumer.js               # Consumes messages in priority order
+└── delayed-queue/                # Delayed Queue Demo
     ├── README.md                 # Detailed documentation
-    ├── producer.js               # Sends messages with priority levels
-    └── consumer.js               # Consumes messages in priority order
+    ├── producer.js               # Creates orders with delay
+    ├── consumer.js               # Processes delayed orders
+    ├── Dockerfile                # RabbitMQ with delayed plugin
+    └── docker-compose.yml        # Docker setup for delayed queue
 ```
 
 ---
@@ -333,6 +340,56 @@ channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
 
 ---
 
+### 6. Delayed Queue
+
+**Time-based message scheduling with Delayed Message Exchange Plugin**
+
+The **Delayed Queue** uses the RabbitMQ Delayed Message Exchange plugin to schedule messages for future delivery. Messages are held by the plugin for a specified delay before being routed to their destination queues.
+
+```javascript
+// Create a delayed message exchange
+await channel.assertExchange(EXCHANGE_NAME, "x-delayed-message", {
+    durable: false,
+    arguments: {
+        "x-delayed-type": "direct"  // The underlying exchange type
+    }
+})
+
+// Send a delayed message (delay in milliseconds)
+channel.publish(EXCHANGE_NAME, ROUTING_KEY, Buffer.from(message), {
+    headers: {
+        "x-delay": 5000  // 5 seconds delay
+    }
+})
+```
+
+**Amazon Order Processing Flow:**
+
+```
+Amazon Order → Batch Creating → Order Processing → Exchange → Queue → Update Order
+```
+
+**Delay Examples:**
+
+| Delay | Use Case |
+|-------|----------|
+| **3-7 seconds** | Batch order processing |
+| **5 minutes** | Order confirmation delay |
+| **24 hours** | Cart abandonment reminder |
+| **30 days** | Subscription renewal notice |
+
+**Use Cases:**
+
+- Scheduled notifications
+- Order batch processing
+- Retry failed operations
+- Time-based workflows
+- Rate limiting
+
+**[Learn More →](delayed-queue/README.md)**
+
+---
+
 ## Running the Demos
 
 Each exchange type has its own folder with a detailed README and runnable examples.
@@ -376,6 +433,15 @@ node commentsLikeNotifications.js
 # Option 5: Priority Queue
 cd priority-queue
 # Run consumer in one terminal first
+node consumer.js
+# Run producer in another terminal
+node producer.js
+
+# Option 6: Delayed Queue (Requires Docker)
+cd delayed-queue
+# Start RabbitMQ with delayed plugin
+docker compose up -d
+# Run consumer in one terminal
 node consumer.js
 # Run producer in another terminal
 node producer.js
@@ -451,6 +517,7 @@ Need pattern matching?                 → Use TOPIC
 Need broadcast to all?                 → Use FANOUT
 Need header-based routing?             → Use HEADERS
 Need priority-based delivery?          → Use PRIORITY QUEUE
+Need time-based scheduling?            → Use DELAYED QUEUE
 ```
 
 ### Quick Decision Tree
@@ -540,6 +607,7 @@ Access RabbitMQ Management UI at **<http://localhost:15672>**
 3. **Explore Fanout Exchange** - Learn pub/sub pattern
 4. **Master Headers Exchange** - Complex attribute routing
 5. **Use Priority Queue** - Priority-based message delivery
+6. **Implement Delayed Queue** - Time-based message scheduling
 
 ---
 
@@ -571,6 +639,6 @@ This project is licensed under the ISC License.
 
 ---
 
-**Happy Messaging! 🚀**
+## Happy Messaging! 🚀
 
 If you found this helpful, please ⭐ star the repository!
