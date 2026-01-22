@@ -14,9 +14,9 @@ A comprehensive, hands-on guide to understanding and implementing all four Rabbi
 
 ## Quick Navigation
 
-| [Direct Exchange](direct-exchange/README.md) | [Topic Exchange](topics-exchange/README.md) | [Fanout Exchange](fanout-exchange/README.md) | [Headers Exchange](header-exchange/README.md) | [Priority Queue](priority-queue/README.md) | [Delayed Queue](delayed-queue/README.md) |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| Exact Match | Wildcard Patterns | Broadcast | Header Attributes | Priority-Based Delivery | Delayed Message Scheduling |
+| [Direct Exchange](direct-exchange/README.md) | [Topic Exchange](topics-exchange/README.md) | [Fanout Exchange](fanout-exchange/README.md) | [Headers Exchange](header-exchange/README.md) | [Priority Queue](priority-queue/README.md) | [Delayed Queue](delayed-queue/README.md) | [Lazy Queue](lazy-queue/README.md) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Exact Match | Wildcard Patterns | Broadcast | Header Attributes | Priority-Based Delivery | Delayed Message Scheduling | Disk-Based Storage |
 
 ## Table of Contents
 
@@ -90,6 +90,7 @@ This repository demonstrates all four standard RabbitMQ exchange types and advan
 | **Headers** | Multiple attribute matching | Complex attribute-based routing |
 | **Priority Queue** | Message priority levels | Urgent vs routine message processing |
 | **Delayed Queue** | Time-based message scheduling | Scheduled/delayed message delivery |
+| **Lazy Queue** | Disk-based message storage | High-volume message archiving |
 
 ---
 
@@ -174,12 +175,16 @@ rabbitmq/
 │   ├── README.md                 # Detailed documentation
 │   ├── producer.js               # Sends messages with priority levels
 │   └── consumer.js               # Consumes messages in priority order
-└── delayed-queue/                # Delayed Queue Demo
+├── delayed-queue/                # Delayed Queue Demo
+│   ├── README.md                 # Detailed documentation
+│   ├── producer.js               # Creates orders with delay
+│   ├── consumer.js               # Processes delayed orders
+│   ├── Dockerfile                # RabbitMQ with delayed plugin
+│   └── docker-compose.yml        # Docker setup for delayed queue
+└── lazy-queue/                   # Lazy Queue Demo
     ├── README.md                 # Detailed documentation
-    ├── producer.js               # Creates orders with delay
-    ├── consumer.js               # Processes delayed orders
-    ├── Dockerfile                # RabbitMQ with delayed plugin
-    └── docker-compose.yml        # Docker setup for delayed queue
+    ├── producer.js               # Publishes to lazy queue
+    └── consumer.js               # Consumes from lazy queue
 ```
 
 ---
@@ -379,7 +384,6 @@ Amazon Order → Batch Creating → Order Processing → Exchange → Queue → 
 | **30 days** | Subscription renewal notice |
 
 **Use Cases:**
-
 - Scheduled notifications
 - Order batch processing
 - Retry failed operations
@@ -387,6 +391,46 @@ Amazon Order → Batch Creating → Order Processing → Exchange → Queue → 
 - Rate limiting
 
 **[Learn More →](delayed-queue/README.md)**
+
+---
+
+### 7. Lazy Queue
+
+**Disk-based message storage for high-volume scenarios**
+
+A **Lazy Queue** is a RabbitMQ queue type that stores messages on disk as much as possible, minimizing memory usage. Messages are only loaded into memory when they need to be delivered to consumers.
+
+```javascript
+// Create a lazy queue
+await channel.assertQueue(queueName, {
+    durable: true,
+    arguments: {
+        'x-queue-mode': 'lazy'  // Store messages on disk
+    }
+})
+
+// Publish persistent message
+channel.publish(exchangeName, routingKey, Buffer.from(message), {
+    persistent: true  // Message survives broker restart
+})
+```
+
+**Key Features:**
+| Feature | Description |
+|---------|-------------|
+| **Disk Storage** | Messages stored on disk by default |
+| **Memory Efficient** | Minimal RAM usage with large backlogs |
+| **High Throughput** | Optimized for storing large volumes |
+| **Persistent** | Messages survive broker restart |
+
+**Use Cases:**
+- High-volume notification systems
+- Audit logging and event sourcing
+- Background job processing
+- Message archiving
+- Large message payloads
+
+**[Learn More →](lazy-queue/README.md)**
 
 ---
 
@@ -442,6 +486,13 @@ cd delayed-queue
 # Start RabbitMQ with delayed plugin
 docker compose up -d
 # Run consumer in one terminal
+node consumer.js
+# Run producer in another terminal
+node producer.js
+
+# Option 7: Lazy Queue
+cd lazy-queue
+# Run consumer in one terminal first
 node consumer.js
 # Run producer in another terminal
 node producer.js
@@ -518,6 +569,7 @@ Need broadcast to all?                 → Use FANOUT
 Need header-based routing?             → Use HEADERS
 Need priority-based delivery?          → Use PRIORITY QUEUE
 Need time-based scheduling?            → Use DELAYED QUEUE
+Need disk-based storage?               → Use LAZY QUEUE
 ```
 
 ### Quick Decision Tree
@@ -608,6 +660,7 @@ Access RabbitMQ Management UI at **<http://localhost:15672>**
 4. **Master Headers Exchange** - Complex attribute routing
 5. **Use Priority Queue** - Priority-based message delivery
 6. **Implement Delayed Queue** - Time-based message scheduling
+7. **Optimize with Lazy Queue** - Disk-based message storage
 
 ---
 
