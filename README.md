@@ -14,9 +14,9 @@ A comprehensive, hands-on guide to understanding and implementing all four Rabbi
 
 ## Quick Navigation
 
-| [Direct Exchange](direct-exchange/README.md) | [Topic Exchange](topics-exchange/README.md) | [Fanout Exchange](fanout-exchange/README.md) | [Headers Exchange](header-exchange/README.md) |
-|:---:|:---:|:---:|:---:|
-| Exact Match | Wildcard Patterns | Broadcast | Header Attributes |
+| [Direct Exchange](direct-exchange/README.md) | [Topic Exchange](topics-exchange/README.md) | [Fanout Exchange](fanout-exchange/README.md) | [Headers Exchange](header-exchange/README.md) | [Priority Queue](priority-queue/README.md) |
+|:---:|:---:|:---:|:---:|:---:|
+| Exact Match | Wildcard Patterns | Broadcast | Header Attributes | Priority-Based Delivery |
 
 ## Table of Contents
 
@@ -80,7 +80,7 @@ Exchanges are **message routing agents** that receive messages from producers an
 
 ## Exchange Types Covered
 
-This repository demonstrates all four standard RabbitMQ exchange types:
+This repository demonstrates all four standard RabbitMQ exchange types and the Priority Queue feature:
 
 | Exchange Type | Routing Strategy | Best Use Case |
 |--------------|------------------|---------------|
@@ -88,6 +88,7 @@ This repository demonstrates all four standard RabbitMQ exchange types:
 | **Topic** | Wildcard pattern matching | Category-based routing |
 | **Fanout** | Broadcast to all queues | Pub/Sub broadcasting |
 | **Headers** | Multiple attribute matching | Complex attribute-based routing |
+| **Priority Queue** | Message priority levels | Urgent vs routine message processing |
 
 ---
 
@@ -114,6 +115,7 @@ docker ps
 ```
 
 **Port Explanation:**
+
 - `5672` - AMQP protocol port (for applications)
 - `15672` - HTTP management API and UI
 
@@ -161,12 +163,16 @@ rabbitmq/
 │   ├── producer.js               # Broadcasts product launches
 │   ├── pushNotification.js       # Push notification consumer
 │   └── smsNotification.js        # SMS notification consumer
-└── header-exchange/              # Headers Exchange Demo
+├── header-exchange/              # Headers Exchange Demo
+│   ├── README.md                 # Detailed documentation
+│   ├── producer.js               # Sends messages with headers
+│   ├── newVideoNotifications.js  # Video notification consumer
+│   ├── liveStreamNotifications.js # Live stream consumer
+│   └── commentsLikeNotifications.js # Comment/like consumer
+└── priority-queue/               # Priority Queue Demo
     ├── README.md                 # Detailed documentation
-    ├── producer.js               # Sends messages with headers
-    ├── newVideoNotifications.js  # Video notification consumer
-    ├── liveStreamNotifications.js # Live stream consumer
-    └── commentsLikeNotifications.js # Comment/like consumer
+    ├── producer.js               # Sends messages with priority levels
+    └── consumer.js               # Consumes messages in priority order
 ```
 
 ---
@@ -188,6 +194,7 @@ channel.bindQueue(queue, exchange, "order.placed")
 ```
 
 **Use Cases:**
+
 - Task queues for specific workers
 - User-type routing (free/premium)
 - Priority-based message routing
@@ -212,6 +219,7 @@ channel.bindQueue(queue, exchange, "order.#")
 ```
 
 **Use Cases:**
+
 - Microservices event routing
 - Log aggregation by severity and source
 - Notification systems with categories
@@ -238,6 +246,7 @@ channel.bindQueue(queue3, exchange, "")
 ```
 
 **Use Cases:**
+
 - Push notifications to multiple channels
 - Event broadcasting to multiple services
 - Live score updates
@@ -271,12 +280,56 @@ channel.bindQueue(queue, exchange, "", {
 ```
 
 **Use Cases:**
+
 - Complex attribute-based routing
 - Multi-criteria filtering
 - Content-type and format filtering
 - Priority and tier-based routing
 
 **[Learn More →](header-exchange/README.md)**
+
+---
+
+### 5. Priority Queue
+
+**Message delivery based on priority levels**
+
+A RabbitMQ queue type that delivers messages to consumers based on their **priority level**. Messages with higher priority are delivered first, ensuring critical messages are processed before less important ones.
+
+```javascript
+// Create a priority queue with max priority of 10
+await channel.assertQueue(queueName, {
+    durable: false,
+    arguments: {
+        "x-max-priority": 10  // Priority range: 0-10
+    }
+})
+
+// Send message with priority
+channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), {
+    priority: message.priority  // 0-10, where 10 is highest
+})
+```
+
+**Priority Levels:**
+
+| Priority | Level | Example |
+|----------|-------|---------|
+| **10** | Critical | Security alerts, system failures |
+| **8-9** | High | Password resets, fraud alerts |
+| **5-7** | Medium | Order confirmations, shipping updates |
+| **3-4** | Low | Marketing emails, promotions |
+| **1-2** | Very Low | Newsletters, general updates |
+
+**Use Cases:**
+
+- Incident management (critical alerts first)
+- E-commerce (order confirmations before marketing)
+- Customer support (VIP customers ahead of regular)
+- Healthcare (emergency notifications first)
+- Financial services (fraud alerts before statements)
+
+**[Learn More →](priority-queue/README.md)**
 
 ---
 
@@ -319,6 +372,13 @@ node producer.js
 node newVideoNotifications.js
 node liveStreamNotifications.js
 node commentsLikeNotifications.js
+
+# Option 5: Priority Queue
+cd priority-queue
+# Run consumer in one terminal first
+node consumer.js
+# Run producer in another terminal
+node producer.js
 ```
 
 ### Step 3: View Results
@@ -327,7 +387,8 @@ Check the consumer terminals to see messages being received based on the exchang
 
 ### Step 4: Monitor with Management UI
 
-Open **http://localhost:15672** in your browser to:
+Open **<http://localhost:15672>** in your browser to:
+
 - View queues and exchanges
 - Monitor message rates
 - Check bindings and connections
@@ -389,6 +450,7 @@ Need exact routing?                    → Use DIRECT
 Need pattern matching?                 → Use TOPIC
 Need broadcast to all?                 → Use FANOUT
 Need header-based routing?             → Use HEADERS
+Need priority-based delivery?          → Use PRIORITY QUEUE
 ```
 
 ### Quick Decision Tree
@@ -415,7 +477,14 @@ Need header-based routing?             → Use HEADERS
                                        YES    NO
                                         │      │
                                         ▼      ▼
-                                      TOPIC  HEADERS
+                                      TOPIC  Headers or
+                                             Priority?
+                                              /   \
+                                           YES     NO
+                                            │      │
+                                            ▼      ▼
+                                        HEADERS PRIORITY
+                                                           QUEUE
 ```
 
 ---
@@ -452,7 +521,7 @@ await channel.assertQueue(queueName, { durable: false })
 
 ## Management UI Reference
 
-Access RabbitMQ Management UI at **http://localhost:15672**
+Access RabbitMQ Management UI at **<http://localhost:15672>**
 
 | Feature | Description |
 |---------|-------------|
@@ -470,6 +539,7 @@ Access RabbitMQ Management UI at **http://localhost:15672**
 2. **Move to Topic Exchange** - Add pattern matching
 3. **Explore Fanout Exchange** - Learn pub/sub pattern
 4. **Master Headers Exchange** - Complex attribute routing
+5. **Use Priority Queue** - Priority-based message delivery
 
 ---
 
@@ -504,4 +574,3 @@ This project is licensed under the ISC License.
 **Happy Messaging! 🚀**
 
 If you found this helpful, please ⭐ star the repository!
-
