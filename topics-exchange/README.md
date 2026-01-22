@@ -1,6 +1,13 @@
 # Topic Exchange Demo
 
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Exchange-Topic](https://img.shields.io/badge/Exchange-Topic-orange?style=for-the-badge)](https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchanges-topic)
+[![Wildcard Routing](https://img.shields.io/badge/Routing-Wildcard-green?style=for-the-badge)](#)
+
 This project demonstrates how to use RabbitMQ's **Topic Exchange** type for pattern-based message routing using wildcard characters.
+
+**Author:** [saranzafar](https://github.com/saranzafar)
 
 ## What is a Topic Exchange?
 

@@ -1,6 +1,13 @@
 # Fanout Exchange Demo
 
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Exchange-Fanout](https://img.shields.io/badge/Exchange-Fanout-orange?style=for-the-badge)](https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchanges-fanout)
+[![Pub/Sub](https://img.shields.io/badge/Pattern-Pub_Subscribe-green?style=for-the-badge)](#)
+
 This project demonstrates how to use RabbitMQ's **Fanout Exchange** type for broadcasting messages to all bound queues simultaneously.
+
+**Author:** [saranzafar](https://github.com/saranzafar)
 
 ## What is a Fanout Exchange?
 

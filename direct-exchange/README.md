@@ -1,6 +1,13 @@
 # Direct Exchange Demo
 
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Exchange-Direct](https://img.shields.io/badge/Exchange-Direct-orange?style=for-the-badge)](https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchanges-direct)
+[![Exact Match](https://img.shields.io/badge/Routing-Exact_Match-green?style=for-the-badge)](#)
+
 This project demonstrates how to use RabbitMQ's **Direct Exchange** type for message routing based on exact routing key matching.
+
+**Author:** [saranzafar](https://github.com/saranzafar)
 
 ## What is a Direct Exchange?
 

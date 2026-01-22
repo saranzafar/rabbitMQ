@@ -1,6 +1,13 @@
 # Header Exchange Demo
 
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Exchange-Headers](https://img.shields.io/badge/Exchange-Headers-orange?style=for-the-badge)](https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchanges-headers)
+[![Attribute Routing](https://img.shields.io/badge/Routing-Attribute_Based-green?style=for-the-badge)](#)
+
 This project demonstrates how to use RabbitMQ's **Headers Exchange** type for message routing based on message attributes/headers instead of routing keys.
+
+**Author:** [saranzafar](https://github.com/saranzafar)
 
 ## What is a Header Exchange?
 
